@@ -18,6 +18,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
+    private final CustomUserDetailsService userDetailsService;
 
     public LoginResponseDTO login(LoginRequestDTO request) {
         try {
@@ -35,7 +36,8 @@ public class AuthService {
             throw new RegraNegocioException("Usuário inativo");
         }
 
-        String token = jwtService.generateToken(usuario);
+        var userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
+        String token = jwtService.generateToken(userDetails);
 
         return LoginResponseDTO.builder()
                 .token(token)
