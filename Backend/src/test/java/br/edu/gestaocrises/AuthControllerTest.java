@@ -15,6 +15,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Testes de integração da autenticação JWT.
+ *
+ * Banco utilizado nos testes: H2 in-memory (perfil "test"), com Flyway aplicando
+ * as mesmas migrations do PostgreSQL. O banco oficial do projeto continua sendo
+ * PostgreSQL; o H2 é usado exclusivamente para agilizar os testes locais e de CI.
+ *
+ * Para rodar com o banco real, usar Docker:
+ *   docker run --rm -v "$PWD":/workspace -w /workspace maven:3.9.9-eclipse-temurin-21 mvn clean test
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -25,6 +35,24 @@ class AuthControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    // ─────────────────────────────────────────────
+    // Auxiliar: obtém token do admin
+    // ─────────────────────────────────────────────
+
+    private String obterTokenAdmin() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                Map.of("email", "admin@empresa.com", "senha", "admin123"));
+
+        String resposta = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return objectMapper.readTree(resposta).path("dados").path("token").asText();
+    }
 
     // ─────────────────────────────────────────────
     // POST /api/auth/login
@@ -95,6 +123,20 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.status").value(401));
     }
 
+    @Test
+    void meComTokenValido_deveRetornar200() throws Exception {
+        String token = obterTokenAdmin();
+
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.dados.email").value("admin@empresa.com"))
+                .andExpect(jsonPath("$.dados.perfil").value("ADMIN"))
+                .andExpect(jsonPath("$.dados.senha").doesNotExist());
+    }
+
     // ─────────────────────────────────────────────
     // GET /api/auth/admin-check
     // ─────────────────────────────────────────────
@@ -105,5 +147,17 @@ class AuthControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
+    }
+
+    @Test
+    void adminCheckComTokenAdmin_deveRetornar200() throws Exception {
+        String token = obterTokenAdmin();
+
+        mockMvc.perform(get("/api/auth/admin-check")
+                        .header("Authorization", "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.mensagem").value("Acesso administrativo autorizado"));
     }
 }

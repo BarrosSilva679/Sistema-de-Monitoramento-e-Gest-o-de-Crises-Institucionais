@@ -26,12 +26,14 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: gestaocrise_db
-      DB_USERNAME: gestaocrise
-      DB_PASSWORD: gestaocrise
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: gestaocrise_db
+      PGUSER: gestaocrise
+      PGPASSWORD: gestaocrise
       SERVER_PORT: 8080
+      APPLICATION_SECURITY_JWT_SECRET_KEY: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      APPLICATION_SECURITY_JWT_EXPIRATION: 86400000
     ports:
       - "8080:8080"
       - "5005:5005"
