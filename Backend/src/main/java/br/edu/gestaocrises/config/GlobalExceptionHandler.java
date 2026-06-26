@@ -6,6 +6,7 @@ import br.edu.gestaocrises.common.RegraNegocioException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,7 +25,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ErrorResponseDTO> handleRegraNegocio(RegraNegocioException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "Regra de negócio inválida", ex.getMessage(), List.of());
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Autenticação inválida", ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBadCredentials(BadCredentialsException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Autenticação inválida", "Credenciais inválidas", List.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
