@@ -1,1 +1,0 @@
-# Sistema-de-Monitoramento-e-Gest-o-de-Crises-Institucionais
