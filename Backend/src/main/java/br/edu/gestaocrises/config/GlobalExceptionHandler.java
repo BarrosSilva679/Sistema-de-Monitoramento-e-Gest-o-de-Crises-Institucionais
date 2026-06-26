@@ -1,5 +1,6 @@
 package br.edu.gestaocrises.config;
 
+import br.edu.gestaocrises.common.CredenciaisInvalidasException;
 import br.edu.gestaocrises.common.ErrorResponseDTO;
 import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.common.RegraNegocioException;
@@ -23,9 +24,14 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Recurso não encontrado", ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCredenciaisInvalidas(CredenciaisInvalidasException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Autenticação inválida", ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ErrorResponseDTO> handleRegraNegocio(RegraNegocioException ex) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Autenticação inválida", ex.getMessage(), List.of());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Regra de negócio violada", ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(BadCredentialsException.class)

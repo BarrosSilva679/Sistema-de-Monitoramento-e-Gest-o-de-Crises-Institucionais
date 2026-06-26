@@ -1,13 +1,14 @@
 package br.edu.gestaocrises.auth;
 
-import br.edu.gestaocrises.common.RegraNegocioException;
+import br.edu.gestaocrises.common.CredenciaisInvalidasException;
+import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.usuarios.Usuario;
 import br.edu.gestaocrises.usuarios.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +26,15 @@ public class AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha())
             );
-        } catch (BadCredentialsException ex) {
-            throw new RegraNegocioException("Credenciais inválidas");
+        } catch (AuthenticationException ex) {
+            throw new CredenciaisInvalidasException("Credenciais inválidas");
         }
 
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RegraNegocioException("Credenciais inválidas"));
+                .orElseThrow(() -> new CredenciaisInvalidasException("Credenciais inválidas"));
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
-            throw new RegraNegocioException("Usuário inativo");
+            throw new CredenciaisInvalidasException("Usuário inativo");
         }
 
         var userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
@@ -54,13 +55,14 @@ public class AuthService {
 
     public UsuarioAutenticadoDTO me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
-            throw new RegraNegocioException("Usuário não autenticado");
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new CredenciaisInvalidasException("Usuário não autenticado");
         }
 
         String email = authentication.getName();
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RegraNegocioException("Usuário não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
         return UsuarioAutenticadoDTO.builder()
                 .id(usuario.getId())

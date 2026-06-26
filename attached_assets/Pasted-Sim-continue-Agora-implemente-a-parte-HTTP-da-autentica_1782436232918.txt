@@ -1,0 +1,121 @@
+Sim, continue.
+
+Agora implemente a parte HTTP da autenticação JWT que ainda está faltando.
+
+Antes de alterar arquivos, leia novamente:
+- AuthService.java
+- JwtService.java
+- SecurityConfig.java
+- CustomUserDetailsService.java
+- JwtAuthenticationFilter.java
+- GlobalExceptionHandler.java
+- application.yml
+
+Implemente SOMENTE autenticação e autorização.
+
+Não implemente:
+- CRUD de crises
+- usuários
+- relatórios
+- auditoria automática
+- dashboard
+- frontend Angular
+
+Tarefas obrigatórias:
+
+1. Criar AuthController com os endpoints:
+
+POST /api/auth/login
+GET /api/auth/me
+POST /api/auth/logout
+GET /api/auth/admin-check
+
+2. O endpoint POST /api/auth/login deve receber:
+
+{
+  "email": "admin@empresa.com",
+  "senha": "admin123"
+}
+
+E retornar ApiResponseDTO com:
+
+{
+  "status": 200,
+  "mensagem": "Login realizado com sucesso",
+  "dados": {
+    "token": "...",
+    "tipo": "Bearer",
+    "expiraEm": 3600,
+    "usuario": {
+      "id": 1,
+      "nome": "Administrador",
+      "email": "admin@empresa.com",
+      "perfil": "ADMIN"
+    }
+  }
+}
+
+3. O endpoint GET /api/auth/me deve:
+- exigir JWT válido
+- retornar dados do usuário autenticado
+- nunca retornar senha ou senhaHash
+
+4. O endpoint POST /api/auth/logout deve:
+- exigir JWT válido
+- retornar sucesso
+- não implementar blacklist de token agora
+
+5. O endpoint GET /api/auth/admin-check deve:
+- exigir perfil ADMIN
+- usar @PreAuthorize("hasRole('ADMIN')")
+- retornar mensagem "Acesso administrativo autorizado"
+
+6. Criar ou corrigir:
+- JwtAuthenticationEntryPoint para retornar 401 em JSON
+- JwtAccessDeniedHandler para retornar 403 em JSON
+- CredenciaisInvalidasException para login inválido
+
+7. Corrigir o tratamento de erros:
+- CredenciaisInvalidasException deve retornar 401
+- RegraNegocioException deve retornar 400
+- RecursoNaoEncontradoException deve retornar 404
+- token inválido, ausente ou expirado deve retornar 401
+- acesso sem permissão deve retornar 403
+
+8. Garantir que SecurityConfig:
+- esteja stateless
+- tenha CSRF desabilitado
+- tenha formLogin desabilitado
+- tenha HTTP Basic desabilitado
+- permita publicamente POST /api/auth/login
+- permita publicamente GET /api/health
+- permita publicamente Swagger
+- proteja todos os demais endpoints
+- registre JwtAuthenticationFilter antes de UsernamePasswordAuthenticationFilter
+- use JwtAuthenticationEntryPoint
+- use JwtAccessDeniedHandler
+- habilite @EnableMethodSecurity
+
+9. Configurar Swagger/OpenAPI para aceitar Bearer Token:
+- esquema bearerAuth
+- tipo HTTP bearer JWT
+
+10. Criar testes:
+- login válido retorna 200 e token
+- login com senha errada retorna 401
+- login com email inexistente retorna 401
+- login com campos inválidos retorna 400
+- /api/auth/me sem token retorna 401
+- /api/auth/admin-check sem token retorna 401
+
+Importante:
+O ambiente nativo do Replit usa Java 19, mas o projeto deve continuar em Java 21. Não altere o pom.xml para Java 19.
+
+Você pode gerar o código sem executar os testes no Replit, mas não mude a versão Java.
+
+Ao finalizar, mostre:
+- arquivos criados
+- arquivos alterados
+- endpoints implementados
+- exemplos curl
+- qualquer pendência causada pelo ambiente Java 19 do Replit
