@@ -49,6 +49,9 @@ public class Crise {
     @Column(nullable = false)
     private OffsetDateTime dataAbertura;
 
+    @Column
+    private java.time.OffsetDateTime dataAtualizacao;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "criador_id", nullable = false)
     private Usuario criador;
