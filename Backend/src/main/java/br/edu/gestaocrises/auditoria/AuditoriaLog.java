@@ -31,6 +31,9 @@ public class AuditoriaLog {
     @Column(nullable = false, length = 100)
     private String entidade;
 
+    @Column(name = "entidade_id")
+    private Long entidadeId;
+
     @Column(columnDefinition = "TEXT")
     private String detalhes;
 
