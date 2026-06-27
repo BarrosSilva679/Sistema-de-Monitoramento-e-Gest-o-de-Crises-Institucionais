@@ -13,8 +13,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -310,12 +308,12 @@ class AcaoCriseControllerTest {
         String acaoAntiga = objectMapper.writeValueAsString(Map.of(
                 "tipo", "MONITORAMENTO",
                 "descricao", "Ação mais antiga",
-                "dataAcao", "2026-01-01T08:00:00+00:00"));
+                "dataAcao", "2020-01-01T08:00:00+00:00"));
 
         String acaoRecente = objectMapper.writeValueAsString(Map.of(
                 "tipo", "RESOLUCAO",
                 "descricao", "Ação mais recente",
-                "dataAcao", "2026-06-01T08:00:00+00:00"));
+                "dataAcao", "2099-12-31T23:59:59+00:00"));
 
         mockMvc.perform(post("/api/crises/" + criseAbertaId + "/acoes")
                 .header("Authorization", "Bearer " + token)
