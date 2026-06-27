@@ -1,5 +1,6 @@
 package br.edu.gestaocrises.acoes;
 
+import br.edu.gestaocrises.auditoria.AuditoriaService;
 import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.common.RegraNegocioException;
 import br.edu.gestaocrises.crises.Crise;
@@ -23,6 +24,7 @@ public class AcaoCriseService {
     private final AcaoCriseRepository acaoCriseRepository;
     private final CriseRepository criseRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AuditoriaService auditoriaService;
 
     @Transactional(readOnly = true)
     public List<AcaoCriseResponseDTO> listarPorCrise(Long criseId) {
@@ -49,7 +51,10 @@ public class AcaoCriseService {
                 .dataAcao(dataAcao)
                 .build();
 
-        return toResponseDTO(acaoCriseRepository.save(acao));
+        AcaoCrise acaoSalva = acaoCriseRepository.save(acao);
+        auditoriaService.registrarLog(executor, "REGISTRO_ACAO_CRISE", "ACAO_CRISE", acaoSalva.getId(),
+                "Ação " + dto.getTipo().name() + " registrada na crise ID " + criseId);
+        return toResponseDTO(acaoSalva);
     }
 
     // ─────────────────────────────────────────────

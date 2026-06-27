@@ -1,5 +1,6 @@
 package br.edu.gestaocrises.usuarios;
 
+import br.edu.gestaocrises.auditoria.AuditoriaService;
 import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.common.RegraNegocioException;
 import br.edu.gestaocrises.perfis.Perfil;
@@ -21,6 +22,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditoriaService auditoriaService;
 
     @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listar() {
@@ -47,7 +49,11 @@ public class UsuarioService {
                 .perfil(perfil)
                 .ativo(true)
                 .build();
-        return toResponseDTO(usuarioRepository.save(usuario));
+        UsuarioResponseDTO resultado = toResponseDTO(usuarioRepository.save(usuario));
+        auditoriaService.registrarLog(obterUsuarioAutenticadoOuNulo(),
+                "CRIACAO_USUARIO", "USUARIO", resultado.getId(),
+                "Usuário criado: " + dto.getNome());
+        return resultado;
     }
 
     @Transactional
@@ -60,7 +66,11 @@ public class UsuarioService {
         usuario.setNome(dto.getNome());
         usuario.setEmail(dto.getEmail());
         usuario.setPerfil(perfil);
-        return toResponseDTO(usuarioRepository.save(usuario));
+        UsuarioResponseDTO resultado = toResponseDTO(usuarioRepository.save(usuario));
+        auditoriaService.registrarLog(obterUsuarioAutenticadoOuNulo(),
+                "EDICAO_USUARIO", "USUARIO", id,
+                "Usuário editado: " + dto.getNome());
+        return resultado;
     }
 
     @Transactional
@@ -77,7 +87,12 @@ public class UsuarioService {
             verificarAutoDesativacao(usuario);
         }
         usuario.setAtivo(dto.getAtivo());
-        return toResponseDTO(usuarioRepository.save(usuario));
+        UsuarioResponseDTO resultado = toResponseDTO(usuarioRepository.save(usuario));
+        String acao = Boolean.FALSE.equals(dto.getAtivo()) ? "DESATIVACAO_USUARIO" : "ATIVACAO_USUARIO";
+        auditoriaService.registrarLog(obterUsuarioAutenticadoOuNulo(),
+                acao, "USUARIO", id,
+                "Status do usuário alterado para: " + dto.getAtivo());
+        return resultado;
     }
 
     @Transactional
@@ -86,7 +101,14 @@ public class UsuarioService {
         verificarAutoDesativacao(usuario);
         usuario.setAtivo(false);
         usuarioRepository.save(usuario);
+        auditoriaService.registrarLog(obterUsuarioAutenticadoOuNulo(),
+                "DESATIVACAO_USUARIO", "USUARIO", id,
+                "Usuário desativado: " + usuario.getNome());
     }
+
+    // ─────────────────────────────────────────────
+    // Privados
+    // ─────────────────────────────────────────────
 
     private Usuario buscarUsuario(Long id) {
         return usuarioRepository.findById(id)
@@ -112,6 +134,19 @@ public class UsuarioService {
             if (auth.getName().equals(usuario.getEmail())) {
                 throw new RegraNegocioException("Não é permitido desativar o próprio usuário");
             }
+        }
+    }
+
+    private Usuario obterUsuarioAutenticadoOuNulo() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()
+                    || "anonymousUser".equals(auth.getPrincipal())) {
+                return null;
+            }
+            return usuarioRepository.findByEmail(auth.getName()).orElse(null);
+        } catch (Exception e) {
+            return null;
         }
     }
 

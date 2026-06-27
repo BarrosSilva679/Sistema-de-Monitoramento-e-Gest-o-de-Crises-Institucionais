@@ -1,5 +1,6 @@
 package br.edu.gestaocrises.relatorios;
 
+import br.edu.gestaocrises.auditoria.AuditoriaService;
 import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.common.RegraNegocioException;
 import br.edu.gestaocrises.crises.Crise;
@@ -23,6 +24,7 @@ public class RelatorioService {
     private final RelatorioCriseRepository relatorioRepository;
     private final CriseRepository criseRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AuditoriaService auditoriaService;
 
     @Transactional
     public RelatorioResponseDTO gerarRelatorio(RelatorioCreateDTO dto) {
@@ -39,7 +41,10 @@ public class RelatorioService {
                 .gerador(gerador)
                 .build();
 
-        return toResponseDTO(relatorioRepository.save(relatorio));
+        RelatorioCrise relatorioSalvo = relatorioRepository.save(relatorio);
+        auditoriaService.registrarLog(gerador, "GERACAO_RELATORIO", "RELATORIO_CRISE",
+                relatorioSalvo.getId(), "Relatório gerado para crise ID " + crise.getId());
+        return toResponseDTO(relatorioSalvo);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package br.edu.gestaocrises.crises;
 
+import br.edu.gestaocrises.auditoria.AuditoriaService;
 import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.common.RegraNegocioException;
 import br.edu.gestaocrises.usuarios.Usuario;
@@ -19,6 +20,7 @@ public class CriseService {
 
     private final CriseRepository criseRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AuditoriaService auditoriaService;
 
     @Transactional(readOnly = true)
     public List<CriseResponseDTO> listar(
@@ -51,7 +53,10 @@ public class CriseService {
                 .responsavel(responsavel)
                 .build();
 
-        return toResponseDTO(criseRepository.save(crise));
+        CriseResponseDTO resultado = toResponseDTO(criseRepository.save(crise));
+        auditoriaService.registrarLog(criador, "CRIACAO_CRISE", "CRISE", resultado.getId(),
+                "Crise criada: " + dto.getTitulo());
+        return resultado;
     }
 
     @Transactional
@@ -69,16 +74,23 @@ public class CriseService {
         crise.setResponsavel(responsavel);
         crise.setDataAtualizacao(OffsetDateTime.now());
 
-        return toResponseDTO(criseRepository.save(crise));
+        CriseResponseDTO resultado = toResponseDTO(criseRepository.save(crise));
+        auditoriaService.registrarLog(obterUsuarioAutenticado(), "EDICAO_CRISE", "CRISE", id,
+                "Crise editada: " + dto.getTitulo());
+        return resultado;
     }
 
     @Transactional
     public CriseResponseDTO alterarStatus(Long id, CriseStatusDTO dto) {
         Crise crise = buscarCrise(id);
-        validarTransicao(crise.getStatus(), dto.getStatus());
+        StatusCrise statusAnterior = crise.getStatus();
+        validarTransicao(statusAnterior, dto.getStatus());
         crise.setStatus(dto.getStatus());
         crise.setDataAtualizacao(OffsetDateTime.now());
-        return toResponseDTO(criseRepository.save(crise));
+        CriseResponseDTO resultado = toResponseDTO(criseRepository.save(crise));
+        auditoriaService.registrarLog(obterUsuarioAutenticado(), "ALTERACAO_STATUS_CRISE", "CRISE", id,
+                "Status: " + statusAnterior.name() + " → " + dto.getStatus().name());
+        return resultado;
     }
 
     @Transactional
