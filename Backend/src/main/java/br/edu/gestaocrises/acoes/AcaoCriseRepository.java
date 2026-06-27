@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AcaoCriseRepository extends JpaRepository<AcaoCrise, Long> {
+    java.util.List<AcaoCrise> findByCriseIdOrderByDataAcaoDesc(Long criseId);
 }
