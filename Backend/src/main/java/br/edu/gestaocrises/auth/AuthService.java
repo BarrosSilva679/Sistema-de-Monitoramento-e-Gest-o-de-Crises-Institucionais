@@ -1,5 +1,6 @@
 package br.edu.gestaocrises.auth;
 
+import br.edu.gestaocrises.auditoria.AuditoriaService;
 import br.edu.gestaocrises.common.CredenciaisInvalidasException;
 import br.edu.gestaocrises.common.RecursoNaoEncontradoException;
 import br.edu.gestaocrises.usuarios.Usuario;
@@ -20,6 +21,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
     private final CustomUserDetailsService userDetailsService;
+    private final AuditoriaService auditoriaService;
 
     public LoginResponseDTO login(LoginRequestDTO request) {
         try {
@@ -39,6 +41,9 @@ public class AuthService {
 
         var userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
         String token = jwtService.generateToken(userDetails);
+
+        auditoriaService.registrarLog(usuario, "LOGIN", "USUARIO", usuario.getId(),
+                "Login realizado com sucesso");
 
         return LoginResponseDTO.builder()
                 .token(token)

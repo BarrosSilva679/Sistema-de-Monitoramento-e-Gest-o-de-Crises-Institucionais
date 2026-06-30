@@ -65,11 +65,25 @@ mvn package
 
 ## Variáveis de ambiente
 
-As configurações do PostgreSQL usam as seguintes variáveis, com valores padrão:
+As configurações do PostgreSQL e JWT usam as seguintes variáveis, com valores padrão:
 
-- DB_HOST=localhost
-- DB_PORT=5432
-- DB_NAME=gestaocrise_db
-- DB_USERNAME=gestaocrise
-- DB_PASSWORD=gestaocrise
-- SERVER_PORT=8080
+### Banco de dados (PostgreSQL)
+
+- `PGHOST` - Host do PostgreSQL (padrão: `localhost`)
+- `PGPORT` - Porta do PostgreSQL (padrão: `5432`)
+- `PGDATABASE` - Nome do banco (padrão: `gestaocrise_db`)
+- `PGUSER` - Usuário do banco (padrão: `gestaocrise`)
+- `PGPASSWORD` - Senha do banco (padrão: `gestaocrise`)
+
+### JWT
+
+- `APPLICATION_SECURITY_JWT_SECRET_KEY` - Chave secreta para assinatura JWT (padrão definido em application.yml)
+- `APPLICATION_SECURITY_JWT_EXPIRATION` - Tempo de expiração em ms (padrão: `86400000` - 24h)
+
+### CORS
+
+- `CORS_ALLOWED_ORIGINS` - Origins permitidas para CORS (padrão: `http://localhost:4200`)
+
+### Servidor
+
+- `SERVER_PORT` - Porta do servidor (padrão: `8080`)

@@ -4,6 +4,6 @@ INSERT INTO perfil (nome, descricao) VALUES
 ('ANALISTA', 'Perfil especializado em análise e documentação');
 
 INSERT INTO usuario (nome, email, senha, perfil_id, ativo)
-SELECT 'Administrador', 'admin@empresa.com', '$2b$10$eT4uVbA6XVGB7dFGqinqTOqW0sSBWBhnAoyLAtcaQzTHxFx57yfjq', p.id, true
+SELECT 'Administrador', 'admin@empresa.com', '$2a$10$eT4uVbA6XVGB7dFGqinqTOqW0sSBWBhnAoyLAtcaQzTHxFx57yfjq', p.id, true
 FROM perfil p
 WHERE p.nome = 'ADMIN';

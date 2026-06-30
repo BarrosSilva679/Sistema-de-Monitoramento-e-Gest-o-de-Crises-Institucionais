@@ -78,6 +78,9 @@ public class UsuarioService {
         Usuario usuario = buscarUsuario(id);
         usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
         usuarioRepository.save(usuario);
+        auditoriaService.registrarLog(obterUsuarioAutenticadoOuNulo(),
+                "ALTERACAO_SENHA", "USUARIO", id,
+                "Senha alterada para o usuário: " + usuario.getEmail());
     }
 
     @Transactional

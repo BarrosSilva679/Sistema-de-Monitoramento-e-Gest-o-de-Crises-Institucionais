@@ -91,11 +91,22 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 1. Criar crise gera log CRIACAO_CRISE
+    // 1. Login gera log LOGIN
     // ─────────────────────────────────────────────
 
     @Test
     @Order(1)
+    void login_deveGerarLogLogin() throws Exception {
+        String token = obterTokenAdmin();
+        assertThat(existeLogComAcao("LOGIN")).isTrue();
+    }
+
+    // ─────────────────────────────────────────────
+    // 2. Criar crise gera log CRIACAO_CRISE
+    // ─────────────────────────────────────────────
+
+    @Test
+    @Order(2)
     void criarCrise_deveGerarLogCriacaoCrise() throws Exception {
         String token = obterTokenAdmin();
         criseId = criarCrise(token, "Crise para auditoria");
@@ -105,11 +116,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 2. Editar crise gera log EDICAO_CRISE
+    // 3. Editar crise gera log EDICAO_CRISE
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(2)
+    @Order(3)
     void editarCrise_deveGerarLogEdicaoCrise() throws Exception {
         String token = obterTokenAdmin();
         String body = objectMapper.writeValueAsString(Map.of(
@@ -128,11 +139,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 3. Alterar status gera log ALTERACAO_STATUS_CRISE
+    // 4. Alterar status gera log ALTERACAO_STATUS_CRISE
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(3)
+    @Order(4)
     void alterarStatus_deveGerarLogAlteracaoStatus() throws Exception {
         String token = obterTokenAdmin();
         alterarStatus(token, criseId, "EM_ANDAMENTO");
@@ -149,11 +160,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 4. Registrar ação de crise gera log REGISTRO_ACAO_CRISE
+    // 5. Registrar ação de crise gera log REGISTRO_ACAO_CRISE
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(4)
+    @Order(5)
     void registrarAcaoCrise_deveGerarLogRegistroAcao() throws Exception {
         String token = obterTokenAdmin();
         String body = objectMapper.writeValueAsString(Map.of(
@@ -169,11 +180,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 5. Gerar relatório gera log GERACAO_RELATORIO
+    // 6. Gerar relatório gera log GERACAO_RELATORIO
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(5)
+    @Order(6)
     void gerarRelatorio_deveGerarLogGeracaoRelatorio() throws Exception {
         String token = obterTokenAdmin();
         // Crise precisa ser RESOLVIDA para ter relatório
@@ -193,11 +204,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 6. Logs criados têm usuarioId, acao, entidade, entidadeId, dataRegistro
+    // 7. Logs criados têm usuarioId, acao, entidade, entidadeId, dataRegistro
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(6)
+    @Order(7)
     void logsDevemTerCamposObrigatorios() throws Exception {
         String token = obterTokenAdmin();
         mockMvc.perform(get("/api/auditoria")
@@ -214,11 +225,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 7. Resposta não contém dados sensíveis
+    // 8. Resposta não contém dados sensíveis
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(7)
+    @Order(8)
     void logsNaoContemDadosSensiveis() throws Exception {
         String token = obterTokenAdmin();
         String resposta = mockMvc.perform(get("/api/auditoria")
@@ -234,11 +245,11 @@ class AuditoriaIntegracaoTest {
     }
 
     // ─────────────────────────────────────────────
-    // 8. Filtro por ação retorna apenas logs daquela ação
+    // 9. Filtro por ação retorna apenas logs daquela ação
     // ─────────────────────────────────────────────
 
     @Test
-    @Order(8)
+    @Order(9)
     void filtroAcao_deveRetornarApenasLogsCorretos() throws Exception {
         String token = obterTokenAdmin();
         mockMvc.perform(get("/api/auditoria")
